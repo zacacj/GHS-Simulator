@@ -278,9 +278,11 @@ this.addEdge = function(ghsEdge){
 }
 
 this.connect = function(l,q){
-  console.log("["+ this.getId() +"]"+"connect. q: " + q.getId()  + " my level: " + this.level);
+  console.log("["+ this.getId() +"]"+"connect. q: " + q.getId()  + " my level: " + this.level  + "q.level" + l);
   var node = this;
   var edge = this.findEdgeByTarget(q.getId());
+    console.log("["+ this.getId() +"]"+".connect: edge " + edge.getId()  + "; status: " + edge.getState());
+
   var level = this.level;
   var target = q;
   if (l < this.level){
@@ -466,6 +468,7 @@ this.acceptE = function(q){
 
  if (this.counter == this.countBranchEdges()){
    console.log("acceptE: == " + this.getId() + " q: " + q.getId() + " counter = " + this.counter + " count= " + this.countBranchEdges());
+   this.counter = 0;
    this.sendReport();
  }
 }
@@ -482,9 +485,10 @@ this.countBranchEdges = function(){
 
 this.sendReport = function(){
   var node = this;
+  var bestWeightSnip = this.bestWeight;
   this.state = 1;
     console.log("sendReport: parent of " + this.id + " is " + this.myParent.getId());
-    setTimeout(function(){node.myParent.report(node.bestWeight,node)},1000);
+    setTimeout(function(){node.myParent.report(bestWeightSnip,node)},1000);
   if ((this.parentReport > 0) && (this.bestWeight < this.parentReport)) {
    console.log("sendReport: and");
    this.changeRoot();
@@ -492,6 +496,7 @@ this.sendReport = function(){
 }
 
 this.report = function(w,q){
+  console.log("[" + this.id + "].report:" + q.getId() + " this.counter " + this.counter);
   if (q.getId() != this.myParent.getId()){
     this.counter++;
     if (w < this.bestWeight){
@@ -508,9 +513,10 @@ this.report = function(w,q){
      }
      edgecy.addClass("highlighted");
    }
-   console.log("report: < countBranchEdges" + this.countBranchEdges() );
+   console.log("report: < countBranchEdges: " + this.countBranchEdges() + " this.counter " + this.counter);
    if ((this.counter == this.countBranchEdges()) && (this.testEdge == null)){
      console.log("report: ==B " + this.getId());
+     this.counter = 0;
      this.sendReport();
    }
  } else if(this.state == 0){
@@ -530,14 +536,16 @@ this.report = function(w,q){
 this.changeRoot = function(){
  // if (this.bestEdge != null){
   var node = this;
-  console.log("changeRoot: this is" + this.getId());
-  console.log("changeRoot: the best edge is" + this.bestEdge.getId());
+  var levelSnipt = this.level;
+  var bestWeightSnipt = this.bestWeight;
+  console.log("["+this.id+"]changeRoot: this is" + this.getId());
+  console.log("["+this.id+"]changeRoot: the best edge is" + this.bestEdge.getId());
 
   if (this.bestEdge.getState() == 1){
-    console.log("changeRoot: if" + this.getId());
+    console.log("["+this.id+"]changeRoot: if" + this.getId());
     setTimeout(function(){node.bestEdge.getTarget().changeRoot()},1000);
   } else {
-    console.log("changeRoot: else" + this.getId());
+    console.log("["+this.id+"]changeRoot: else" + this.getId());
 
     this.bestEdge.setState(1);
     var edgecy =  cy.getElementById(this.bestEdge.getId());
@@ -547,13 +555,13 @@ this.changeRoot = function(){
      edgecy.data('sas','triangle');
    }
    edgecy.addClass("branched");
-    setTimeout(function(){node.bestEdge.getTarget().connect(node.level,node)},1000);
+    setTimeout(function(){node.bestEdge.getTarget().connect(levelSnipt,node)},1000);
 
    
    var i = this.findBestEdge();
    if (i > -1){
-    console.log("changeRoot: if >" + this.getId());
-    setTimeout(function(){ node.bestEdge.getTarget().initiate(node.bestWeight,node.level + 1,0,node)},1000);
+    console.log("["+this.id+"]changeRoot: if >" + this.getId());
+    setTimeout(function(){ node.bestEdge.getTarget().initiate(bestWeightSnipt,levelSnipt + 1,0,node)},1000);
 
    
     this.connections.slice(i,1);
