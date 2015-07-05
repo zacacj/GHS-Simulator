@@ -366,7 +366,14 @@ for (var i = this.tests.length - 1; i >= 0; i--) {
 
  if (this.state == 0){
   console.log("initiate.findMinimalOutgoing.<");
-  this.findMinimalOutgoing();
+    if (! this.findMinimalOutgoing()){
+    this.bestWeight = 999999;
+    if (this.counter == this.countBranchEdges()){
+        console.log(".initiate == " + this.getId() + " q: " + q.getId() + " counter = " + this.counter + " count= " + this.countBranchEdges());
+        //this.counter = 0;
+        this.sendReport();
+    }
+  }
 }
 }
 
@@ -386,13 +393,17 @@ this.findMinimalOutgoing = function(){
       }
     }
   };
+
+
   var node = this;
   if (minEdge != null){
     console.log("findMinimalOutgoing.if.!= " + this.id +" outgoing "+ minEdge.getId());
     this.testEdge = minEdge;
     setTimeout(function(){minEdge.getTarget().teste(node.name,node.level,node)},1000);  
+    return true;
   } else {
     this.testEdge = null;
+    return false;
   }
 }
 
@@ -430,8 +441,14 @@ this.replyTest = function(q,fn){
 
   } else {
     console.log("replyTest.else.if.else");
-    this.findMinimalOutgoing();
-  }
+  if (! this.findMinimalOutgoing()){
+    this.bestWeight = 999999;
+    if (this.counter == this.countBranchEdges()){
+        console.log(".replyTest: == " + this.getId() + " q: " + q.getId() + " counter = " + this.counter + " count= " + this.countBranchEdges());
+        //this.counter = 0;
+        this.sendReport();
+    }
+  }  }
 }
 }
 
@@ -468,7 +485,7 @@ this.acceptE = function(q){
 
  if (this.counter == this.countBranchEdges()){
    console.log("acceptE: == " + this.getId() + " q: " + q.getId() + " counter = " + this.counter + " count= " + this.countBranchEdges());
-   this.counter = 0;
+ //this.counter = 0;
    this.sendReport();
  }
 }
@@ -488,15 +505,16 @@ this.sendReport = function(){
   var bestWeightSnip = this.bestWeight;
   this.state = 1;
     console.log("sendReport: parent of " + this.id + " is " + this.myParent.getId());
-    setTimeout(function(){node.myParent.report(bestWeightSnip,node)},1000);
+    setTimeout(function(){node.myParent.report(bestWeightSnip,node)},1);
   if ((this.parentReport > 0) && (this.bestWeight < this.parentReport)) {
    console.log("sendReport: and");
-   this.changeRoot();
+    this.changeRoot();
  }
 }
 
 this.report = function(w,q){
   console.log("[" + this.id + "].report:" + q.getId() + " this.counter " + this.counter);
+  var node = this;
   if (q.getId() != this.myParent.getId()){
     this.counter++;
     if (w < this.bestWeight){
@@ -516,7 +534,7 @@ this.report = function(w,q){
    console.log("report: < countBranchEdges: " + this.countBranchEdges() + " this.counter " + this.counter);
    if ((this.counter == this.countBranchEdges()) && (this.testEdge == null)){
      console.log("report: ==B " + this.getId());
-     this.counter = 0;
+    // this.counter = 0;
      this.sendReport();
    }
  } else if(this.state == 0){
@@ -526,6 +544,7 @@ this.report = function(w,q){
   if (this.bestWeight < w){
     console.log("report: <n" + this.getId());
     this.changeRoot();
+    //setTimeout(function(){node.changeRoot()},1000);
   } else if (w == 999999){
    console.log("report: fim" + this.getId());
    console.log("fim");
@@ -561,9 +580,7 @@ this.changeRoot = function(){
    var i = this.findBestEdge();
    if (i > -1){
     console.log("["+this.id+"]changeRoot: if >" + this.getId());
-    setTimeout(function(){ node.bestEdge.getTarget().initiate(bestWeightSnipt,levelSnipt + 1,0,node)},1000);
-
-   
+    setTimeout(function(){ node.bestEdge.getTarget().initiate(bestWeightSnipt,levelSnipt + 1,0,node)},1000);   
     this.connections.slice(i,1);
   }
 }
@@ -584,7 +601,14 @@ this.rejectE = function(q){
   console.log("rejectE: " + this.getId() + " q: " + q.getId());
   var edge = this.findEdgeByTarget(q.getId());
   edge.setState(2);
-  this.findMinimalOutgoing();
+  if (! this.findMinimalOutgoing()){
+    this.bestWeight = 999999;
+    if (this.counter == this.countBranchEdges()){
+        console.log("rejectE: == " + this.getId() + " q: " + q.getId() + " counter = " + this.counter + " count= " + this.countBranchEdges());
+        //this.counter = 0;
+        this.sendReport();
+    }
+  }
 }
 
 this.findEdgeByTarget = function(t){
