@@ -93,13 +93,14 @@ var whoIsSelected = function(){
 
 document.ondblclick = function(e) {
   var color = colors.pop();
-  if (!hasAnySelected()){
+  if (!hasAnySelected() && nodeIDCount < 9){
     cy.add({
       group: "nodes",
       data: { id : nodeIDCount.toString(),label : nodeIDCount.toString() + ':N', weight: 75, bg:color,  bc :color},
       renderedPosition: { x: e.pageX, y: e.pageY }
-
     });
+
+    addNodeDiagram(nodeIDCount.toString());
 
     ghsNodes.push(new GHSNode(nodeIDCount)) ;
    // cy.getElementById("nodeIDCount").style('background-color', '#00ff00');
@@ -107,10 +108,28 @@ document.ondblclick = function(e) {
  }
 };
 
+////////------------------- Diagrama -------------------///////////
+
+var diagram = null;
+var text = document.getElementById('uml').innerText;
+var node  = document.getElementById('diagram');
+
+var addNodeDiagram = function(number){
+  if(node.firstChild){
+    node.removeChild(node.firstChild)    
+  }
+  text = text + 'participant '+number+'\n';
+  diagram = Diagram.parse(text);
+  diagram.drawSVG("diagram", {theme: 'hand'});
+}
+
+////////------------------- Fim Diagrama -------------------///////////
+
+
 var first = null;
 
 document.onclick = function(e){
-  if (event.ctrlKey) {
+  if (event.shiftKey) {
     if(!first){
       first = whoIsSelected()
     } else {
@@ -258,7 +277,10 @@ function GHSNode(value){
    console.log( "[" + this.getId() + "]" + ".initiazize: my best edge is: " + this.bestEdge.getId());
    var node = this;
    var target = this.bestEdge.getTarget();
-   setTimeout(function(){console.log(node.getId()+ " send Connect" + target.getId());target.connect(0,node)},1000);
+   setTimeout(function(){
+    console.log(node.getId()+ " send Connect" + target.getId());
+    target.connect(0,node)
+   },1000);
  }
  this.findminimal = function(){
 
