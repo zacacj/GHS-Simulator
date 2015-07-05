@@ -129,7 +129,7 @@ var addNodeDiagram = function(number){
 var first = null;
 
 document.onclick = function(e){
-  if (event.shiftKey) {
+  if (event.ctrlKey) {
     if(!first){
       first = whoIsSelected()
     } else {
