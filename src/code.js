@@ -93,7 +93,7 @@ var whoIsSelected = function(){
 
 document.ondblclick = function(e) {
   var color = colors.pop();
-  if (!hasAnySelected() && nodeIDCount < 9){
+  if (!hasAnySelected()){
     cy.add({
       group: "nodes",
       data: { id : nodeIDCount.toString(),label : nodeIDCount.toString() + ':N', weight: 75, bg:color,  bc :color},
@@ -112,15 +112,24 @@ document.ondblclick = function(e) {
 
 var diagram = null;
 var text = document.getElementById('uml').innerText;
-var node  = document.getElementById('diagram');
+var node_s  = document.getElementById('diagram');
 
 var addNodeDiagram = function(number){
-  if(node.firstChild){
-    node.removeChild(node.firstChild)    
+  if(node_s.firstChild){
+    node_s.removeChild(node_s.firstChild)    
   }
   text = text + 'participant '+number+'\n';
   diagram = Diagram.parse(text);
-  diagram.drawSVG("diagram", {theme: 'hand'});
+  diagram.drawSVG("diagram", {theme: 'simple'});
+}
+
+var addMessageDiagram = function(message){
+  if(node_s.firstChild){
+    node_s.removeChild(node_s.firstChild)
+  }
+  text = text + message+'\n';
+  diagram = Diagram.parse(text);
+  diagram.drawSVG("diagram", {theme: 'simple'});
 }
 
 ////////------------------- Fim Diagrama -------------------///////////
@@ -129,7 +138,7 @@ var addNodeDiagram = function(number){
 var first = null;
 
 document.onclick = function(e){
-  if (event.shiftKey) {
+  if (event.metaKey) {
     if(!first){
       first = whoIsSelected()
     } else {
@@ -279,6 +288,7 @@ function GHSNode(value){
    var target = this.bestEdge.getTarget();
    setTimeout(function(){
     console.log(node.getId()+ " send Connect" + target.getId());
+    addMessageDiagram(node.getId()+'->'+target.getId()+': Connect');
     target.connect(0,node)
    },1000);
  }
@@ -309,7 +319,12 @@ this.connect = function(l,q){
   var target = q;
   if (l < this.level){
     console.log("connect.<");
-    setTimeout(function(){console.log(node.getId()+ " send Initiate <" + target.getId());target.initiate(node.name,level,node.state,node)},1000);
+    setTimeout(function(){
+      console.log(node.getId()+ " send Initiate <" + target.getId());
+      addMessageDiagram(node.getId()+'->'+target.getId()+': Initiate');
+      target.initiate(node.name,level,node.state,node)
+    },1000);
+
     edge.setState(1);
     var edgecy =  cy.getElementById(edge.getId());
     if (this.id == edge.getP()){  
@@ -322,7 +337,11 @@ this.connect = function(l,q){
    // edgeCy.addClass("branched");
  } else if (edge.getState() == 1){
   console.log("connect.==");
-  setTimeout(function(){console.log(node.getId()+ " send Initiate ==" + target.getId() + "; weight: " + edge.getWeight() + "; level:" + level);target.initiate(edge.getWeight(),level + 1,0,node)},1000);
+  setTimeout(function(){
+    console.log(node.getId()+ " send Initiate ==" + target.getId() + "; weight: " + edge.getWeight() + "; level:" + level);
+    addMessageDiagram(node.getId()+'->'+target.getId()+': Initiate');
+    target.initiate(edge.getWeight(),level + 1,0,node)
+  },1000);
 } else {
   console.log(node.getId() + " connect.else: " + q.getId() + " l: " + l);
   this.connections.push(new GHSConnection(q,l))
@@ -371,7 +390,11 @@ for (var i = this.connections.length - 1; i >= 0; i--) {
     var pair = this.edges[i].getTarget();
     if (pair.getId() != q.getId()){
       console.log("initiate.for2.!=");
-      setTimeout(function(){console.log("send initiate From: " + node.id + " to: " + pair.getId() );pair.initiate(fn,l,st,node)},1000);
+      setTimeout(function(){
+        console.log("send initiate From: " + node.id + " to: " + pair.getId() );
+        addMessageDiagram(node.id+'->'+pair.getId()+': Initiate');
+        pair.initiate(fn,l,st,node)
+      },1000);
       pair.initiate(fn,l,st,this);
     }
   }
@@ -421,7 +444,10 @@ this.findMinimalOutgoing = function(){
   if (minEdge != null){
     console.log("findMinimalOutgoing.if.!= " + this.id +" outgoing "+ minEdge.getId());
     this.testEdge = minEdge;
-    setTimeout(function(){minEdge.getTarget().teste(node.name,node.level,node)},1000);  
+    setTimeout(function(){
+      addMessageDiagram(node.getId()+'->'+minEdge.getTarget().getId()+': Test');
+      minEdge.getTarget().teste(node.name,node.level,node)
+    },1000);  
     return true;
   } else {
     this.testEdge = null;
@@ -443,8 +469,11 @@ this.teste = function(fn,l,n){
 this.replyTest = function(q,fn){
   var node = this;
   if (this.name != fn){
-    console.log("replyTest.if.!= from " + this.id + " to " +q.getId());
-    setTimeout(function(){q.acceptE(node)},1000);
+    console.log("replyTest.if.!= from " + this.id + " to " +q.getId());    
+    setTimeout(function(){
+      addMessageDiagram(node.getId()+'->'+q.getId()+': Accept');
+      q.acceptE(node)
+    },1000);
   } else {
     console.log("replyTest.else");
     var edge = this.findEdgeByTarget(q.getId());
@@ -459,7 +488,10 @@ this.replyTest = function(q,fn){
   //  edge.getTarget().setEdgeState(2,this);
   if ((this.testEdge == null) || (this.testEdge.getId() != edge.getId())){
     console.log("replyTest.else.if.!="+ this.id + " to " +q.getId());
-       setTimeout(function(){q.rejectE(node)},1000);
+    setTimeout(function(){
+      addMessageDiagram(node.getId()+'->'+q.getId()+': Reject');
+      q.rejectE(node)
+    },1000);
 
   } else {
     console.log("replyTest.else.if.else");
@@ -527,7 +559,10 @@ this.sendReport = function(){
   var bestWeightSnip = this.bestWeight;
   this.state = 1;
     console.log("sendReport: parent of " + this.id + " is " + this.myParent.getId());
-    setTimeout(function(){node.myParent.report(bestWeightSnip,node)},1);
+    setTimeout(function(){
+      addMessageDiagram(node.getId()+'->'+node.myParent.getId()+': Report');
+      node.myParent.report(bestWeightSnip,node)
+    },1);
   if ((this.parentReport > 0) && (this.bestWeight < this.parentReport)) {
    console.log("sendReport: and");
     this.changeRoot();
@@ -584,7 +619,10 @@ this.changeRoot = function(){
 
   if (this.bestEdge.getState() == 1){
     console.log("["+this.id+"]changeRoot: if" + this.getId());
-    setTimeout(function(){node.bestEdge.getTarget().changeRoot()},1000);
+    setTimeout(function(){
+      addMessageDiagram(node.getId()+'->'+node.bestEdge.getTarget().getId()+': Change Root');
+      node.bestEdge.getTarget().changeRoot()
+    },1000);
   } else {
     console.log("["+this.id+"]changeRoot: else" + this.getId());
 
@@ -596,13 +634,19 @@ this.changeRoot = function(){
      edgecy.data('sas','triangle');
    }
    edgecy.addClass("branched");
-    setTimeout(function(){node.bestEdge.getTarget().connect(levelSnipt,node)},1000);
+    setTimeout(function(){
+      addMessageDiagram(node.getId()+'->'+node.bestEdge.getTarget().getId()+': Connect');
+      node.bestEdge.getTarget().connect(levelSnipt,node)
+    },1000);
 
    
    var i = this.findBestEdge();
    if (i > -1){
     console.log("["+this.id+"]changeRoot: if >" + this.getId());
-    setTimeout(function(){ node.bestEdge.getTarget().initiate(bestWeightSnipt,levelSnipt + 1,0,node)},1000);   
+    setTimeout(function(){
+      addMessageDiagram(node.getId()+'->'+node.bestEdge.getTarget().getId()+': Initiate');
+      node.bestEdge.getTarget().initiate(bestWeightSnipt,levelSnipt + 1,0,node)
+    },1000);   
     this.connections.slice(i,1);
   }
 }
