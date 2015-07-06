@@ -68,6 +68,7 @@ $(function(){ // on dom ready
 
 
 var colors = ['#ff0000','#ffff00','#00ff00','#0000ff','#000000','#00ffff','#808000','#ff0099','#808080']
+var sleep = 1000;
 var hasAnySelected = function(){
   var eles = cy.elements();
 
@@ -290,7 +291,7 @@ function GHSNode(value){
     console.log(node.getId()+ " send Connect" + target.getId());
     addMessageDiagram(node.getId()+'->'+target.getId()+': Connect');
     target.connect(0,node)
-   },1000);
+   },(Math.floor((Math.random() * 100) + 1)) +1000);
  }
  this.findminimal = function(){
 
@@ -323,7 +324,7 @@ this.connect = function(l,q){
       console.log(node.getId()+ " send Initiate <" + target.getId());
       addMessageDiagram(node.getId()+'->'+target.getId()+': Initiate');
       target.initiate(node.name,level,node.state,node)
-    },1000);
+    },(Math.floor((Math.random() * 100) + 1)) +1000);
 
     edge.setState(1);
     var edgecy =  cy.getElementById(edge.getId());
@@ -341,7 +342,7 @@ this.connect = function(l,q){
     console.log(node.getId()+ " send Initiate ==" + target.getId() + "; weight: " + edge.getWeight() + "; level:" + level);
     addMessageDiagram(node.getId()+'->'+target.getId()+': Initiate');
     target.initiate(edge.getWeight(),level + 1,0,node)
-  },1000);
+  },(Math.floor((Math.random() * 100) + 1)) +1000);
 } else {
   console.log(node.getId() + " connect.else: " + q.getId() + " l: " + l);
   this.connections.push(new GHSConnection(q,l))
