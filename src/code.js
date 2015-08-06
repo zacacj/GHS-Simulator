@@ -291,7 +291,7 @@ function GHSNode(value){
     console.log(node.getId()+ " send Connect" + target.getId());
     addMessageDiagram(node.getId()+'->'+target.getId()+': Connect');
     target.connect(0,node)
-   },(Math.floor((Math.random() * 100) + 1)) +1000);
+   },1000);
  }
  this.findminimal = function(){
 
@@ -324,7 +324,7 @@ this.connect = function(l,q){
       console.log(node.getId()+ " send Initiate <" + target.getId());
       addMessageDiagram(node.getId()+'->'+target.getId()+': Initiate');
       target.initiate(node.name,level,node.state,node)
-    },(Math.floor((Math.random() * 100) + 1)) +1000);
+    },1000);
 
     edge.setState(1);
     var edgecy =  cy.getElementById(edge.getId());
@@ -342,7 +342,7 @@ this.connect = function(l,q){
     console.log(node.getId()+ " send Initiate ==" + target.getId() + "; weight: " + edge.getWeight() + "; level:" + level);
     addMessageDiagram(node.getId()+'->'+target.getId()+': Initiate');
     target.initiate(edge.getWeight(),level + 1,0,node)
-  },(Math.floor((Math.random() * 100) + 1)) +1000);
+  },1000);
 } else {
   console.log(node.getId() + " connect.else: " + q.getId() + " l: " + l);
   this.connections.push(new GHSConnection(q,l))
